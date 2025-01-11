@@ -1,14 +1,3 @@
--- Blox Fruits Game Place ID (currently as of the latest update)
-local bloxFruitsPlaceId = 2753915549  -- Place ID for Blox Fruits
-local bloxFruitsGameId = 723942275 -- Game ID for Blox Fruits
-
--- Check if the game is Blox Fruits using both PlaceId and GameId
-if game.PlaceId ~= bloxFruitsPlaceId or game.GameId ~= bloxFruitsGameId then
-    -- Disconnect the player with a warning message
-    game.Players.LocalPlayer:Kick("Game not supported. Only Blox Fruits is supported.")
-    return  -- Exit the script if the game is not Blox Fruits
-end
-
 -- Create the main GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "BFTradeScamGUI"
@@ -167,3 +156,39 @@ end
 createButton("StartTradeScam", "Start Trade Scam", UDim2.new(0, 10, 0, 40))
 createButton("FreezeTrade", "Freeze Trade", UDim2.new(0, 10, 0, 75))
 createButton("AutoReadyTrade", "Auto Ready Trade", UDim2.new(0, 10, 0, 110))
+
+-- Function to implement the features
+local startTradeScam = frame:WaitForChild("StartTradeScam")
+local freezeTrade = frame:WaitForChild("FreezeTrade")
+local autoReadyTrade = frame:WaitForChild("AutoReadyTrade")
+
+-- Start Trade Scam: Remove fruit visually for other players
+startTradeScam.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    -- Hides fruit visually for others (you can customize this with transparent parts or other methods)
+    if character:FindFirstChild("Fruit") then
+        local fruit = character.Fruit
+        fruit.Transparency = 1  -- Make fruit invisible for others
+        fruit.CanCollide = false  -- Disable collisions to hide it
+    end
+end)
+
+-- Freeze Trade: Freeze another player's POV (local effect)
+freezeTrade.MouseButton1Click:Connect(function()
+    -- In this case, freeze the local player's screen as a visual effect
+    local player = game.Players.LocalPlayer
+    local camera = game.Workspace.CurrentCamera
+
+    -- Example freeze (stop camera movement)
+    camera.CameraType = Enum.CameraType.Scriptable
+    camera.CFrame = camera.CFrame  -- Keeps camera in place
+
+    -- Optional: Show some freeze effect on the GUI
+end)
+
+-- Auto Ready Trade: Automatically click "Ready" when the trade is open
+autoReadyTrade.MouseButton1Click:Connect(function()
+    -- Here, you'll need to simulate a button click for "Ready" in the trade window
+    --
