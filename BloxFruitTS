@@ -1,0 +1,150 @@
+local a = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+if a ~= "Blox Fruits" then
+    game.Players.LocalPlayer:Kick("This script not supported the game. Only Blox Fruits is supported of this script.")
+    return
+end
+
+local b = Instance.new("ScreenGui")
+b.Name = "BFTradeScamGUI"
+b.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local c = Instance.new("Frame")
+c.Name = "MainFrame"
+c.Size = UDim2.new(0, 200, 0, 150)
+c.Position = UDim2.new(0.5, -100, 0.5, -75)
+c.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+c.BorderSizePixel = 0
+c.AnchorPoint = Vector2.new(0.5, 0.5)
+c.Parent = b
+
+local d = Instance.new("UICorner")
+d.CornerRadius = UDim.new(0, 8)
+d.Parent = c
+
+local e = Instance.new("TextLabel")
+e.Name = "Title"
+e.Size = UDim2.new(1, -1, 0, 25)
+e.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+e.Text = "BF Trade Scam"
+e.TextColor3 = Color3.new(1, 1, 1)
+e.TextScaled = true
+e.Font = Enum.Font.GothamBold
+e.TextXAlignment = Enum.TextXAlignment.Left
+e.Parent = c
+
+local f = Instance.new("TextButton")
+f.Name = "MinimizeButton"
+f.Size = UDim2.new(0, 15, 0, 15)
+f.Position = UDim2.new(1, -20, 0, 5)
+f.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+f.BorderSizePixel = 0
+f.Text = "—"
+f.TextColor3 = Color3.new(1, 1, 1)
+f.TextScaled = true
+f.Font = Enum.Font.GothamBold
+f.Parent = e
+
+local g = Instance.new("UIPadding")
+g.PaddingLeft = UDim.new(0, 8)
+g.Parent = e
+
+local h, i, j
+
+local function k(l)
+    local m = l.Position - i
+    c.Position = UDim2.new(
+        j.X.Scale,
+        j.X.Offset + m.X,
+        j.Y.Scale,
+        j.Y.Offset + m.Y
+    )
+end
+
+c.InputBegan:Connect(function(l, n)
+    if not n then
+        if l.UserInputType == Enum.UserInputType.MouseButton1 or l.UserInputType == Enum.UserInputType.Touch then
+            h = true
+            i = l.Position
+            j = c.Position
+            l.Changed:Connect(function()
+                if l.UserInputState == Enum.UserInputState.End then
+                    h = false
+                end
+            end)
+        end
+    end
+end)
+
+c.InputChanged:Connect(function(l)
+    if h and (l.UserInputType == Enum.UserInputType.MouseMovement or l.UserInputType == Enum.UserInputType.Touch) then
+        k(l)
+    end
+end)
+
+local n = false
+f.MouseButton1Click:Connect(function()
+    n = not n
+    c.Size = n and UDim2.new(0, 200, 0, 30) or UDim2.new(0, 200, 0, 150)
+    for _, o in ipairs(c:GetChildren()) do
+        if o.Name ~= "Title" then
+            if o:IsA("Frame") then
+                for _, p in ipairs(o:GetChildren()) do
+                    if p:IsA("TextLabel") or p.Name == "Checkbox" then
+                        p.Visible = not n
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local function q(r, s, t)
+    local u = Instance.new("Frame")
+    u.Name = r
+    u.Size = UDim2.new(1, -20, 0, 30)
+    u.Position = t
+    u.BackgroundTransparency = 1
+    u.Parent = c
+
+    local v = Instance.new("TextLabel")
+    v.Size = UDim2.new(0.8, 0, 1, 0)
+    v.BackgroundTransparency = 1
+    v.Text = s
+    v.TextColor3 = Color3.new(1, 1, 1)
+    v.TextScaled = true
+    v.Font = Enum.Font.Gotham
+    v.TextXAlignment = Enum.TextXAlignment.Left
+    v.Parent = u
+
+    local w = Instance.new("TextButton")
+    w.Name = "Checkbox"
+    w.Size = UDim2.new(0, 20, 0, 20)
+    w.Position = UDim2.new(1, -25, 0.5, -10)
+    w.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    w.BorderSizePixel = 2
+    w.AutoButtonColor = false
+    w.Parent = u
+
+    local x = Instance.new("UICorner")
+    x.CornerRadius = UDim.new(0, 4)
+    x.Parent = w
+
+    local y = Instance.new("TextLabel")
+    y.Name = "CheckSign"
+    y.Size = UDim2.new(1, 0, 1, 0)
+    y.BackgroundTransparency = 1
+    y.Text = "✓"
+    y.TextColor3 = Color3.new(1, 1, 1)
+    y.TextScaled = true
+    y.Font = Enum.Font.GothamBold
+    y.Visible = false
+    y.Parent = w
+
+    w.MouseButton1Click:Connect(function()
+        y.Visible = not y.Visible
+    end)
+end
+
+q("StartTradeScam", "Start Trade Scam", UDim2.new(0, 10, 0, 40))
+q("FreezeTrade", "Freeze Trade", UDim2.new(0, 10, 0, 75))
+q("AutoReadyTrade", "Auto Ready Trade", UDim2.new(0, 10, 0, 110))
