@@ -1,96 +1,114 @@
-local a = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
-if a ~= "Blox Fruits" then
-    game.Players.LocalPlayer:Kick("This script not supported the game. Only Blox Fruits is supported of this script.")
-    return
+-- Ensure the game ID is 2753915549 (Blox Fruits)
+if game.PlaceId ~= 2753915549 then
+    -- Display an error message if the script is not executed in Blox Fruits
+    local errorMessage = Instance.new("Message")
+    errorMessage.Text = "The script is not supported the game. Only Blox Fruits is supported of the script (Game ID: 2753915549)."
+    errorMessage.Parent = game.Workspace
+    
+    -- Optional: Remove the error message after some time
+    wait(5)
+    errorMessage:Destroy()
+
+    return  -- Exit the script if it's not the correct game
 end
 
-local b = Instance.new("ScreenGui")
-b.Name = "BFTradeScamGUI"
-b.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+-- Create the main GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "BFTradeScamGUI"
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local c = Instance.new("Frame")
-c.Name = "MainFrame"
-c.Size = UDim2.new(0, 200, 0, 150)
-c.Position = UDim2.new(0.5, -100, 0.5, -75)
-c.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-c.BorderSizePixel = 0
-c.AnchorPoint = Vector2.new(0.5, 0.5)
-c.Parent = b
+-- Create the main frame
+local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 200, 0, 150)
+frame.Position = UDim2.new(0.5, -100, 0.5, -75)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BorderSizePixel = 0
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.Parent = gui
 
-local d = Instance.new("UICorner")
-d.CornerRadius = UDim.new(0, 8)
-d.Parent = c
+-- Add rounded corners to the frame
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 8)
+uiCorner.Parent = frame
 
-local e = Instance.new("TextLabel")
-e.Name = "Title"
-e.Size = UDim2.new(1, -1, 0, 25)
-e.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-e.Text = "BF Trade Scam"
-e.TextColor3 = Color3.new(1, 1, 1)
-e.TextScaled = true
-e.Font = Enum.Font.GothamBold
-e.TextXAlignment = Enum.TextXAlignment.Left
-e.Parent = c
+-- Title bar
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.new(1, -1, 0, 25)  -- Adjust size to leave space for minimize button
+title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+title.Text = "BF Trade Scam"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = frame
 
-local f = Instance.new("TextButton")
-f.Name = "MinimizeButton"
-f.Size = UDim2.new(0, 15, 0, 15)
-f.Position = UDim2.new(1, -20, 0, 5)
-f.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-f.BorderSizePixel = 0
-f.Text = "—"
-f.TextColor3 = Color3.new(1, 1, 1)
-f.TextScaled = true
-f.Font = Enum.Font.GothamBold
-f.Parent = e
+-- Minimize button (Dash symbol, small size)
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Name = "MinimizeButton"
+minimizeButton.Size = UDim2.new(0, 15, 0, 15)  -- Small size for the minimize button
+minimizeButton.Position = UDim2.new(1, -20, 0, 5)  -- Positioned to the right and slightly below the top edge of the title bar
+minimizeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+minimizeButton.BorderSizePixel = 0
+minimizeButton.Text = "—"  -- Dash symbol for minimize
+minimizeButton.TextColor3 = Color3.new(1, 1, 1)
+minimizeButton.TextScaled = true
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.Parent = title
 
-local g = Instance.new("UIPadding")
-g.PaddingLeft = UDim.new(0, 8)
-g.Parent = e
+-- Padding for title text
+local uiPadding = Instance.new("UIPadding")
+uiPadding.PaddingLeft = UDim.new(0, 8)
+uiPadding.Parent = title
 
-local h, i, j
+-- Make the GUI draggable for mobile and desktop
+local dragging, dragStart, startPos
 
-local function k(l)
-    local m = l.Position - i
-    c.Position = UDim2.new(
-        j.X.Scale,
-        j.X.Offset + m.X,
-        j.Y.Scale,
-        j.Y.Offset + m.Y
+-- Function to update position of the frame
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
     )
 end
 
-c.InputBegan:Connect(function(l, n)
-    if not n then
-        if l.UserInputType == Enum.UserInputType.MouseButton1 or l.UserInputType == Enum.UserInputType.Touch then
-            h = true
-            i = l.Position
-            j = c.Position
-            l.Changed:Connect(function()
-                if l.UserInputState == Enum.UserInputState.End then
-                    h = false
+frame.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
                 end
             end)
         end
     end
 end)
 
-c.InputChanged:Connect(function(l)
-    if h and (l.UserInputType == Enum.UserInputType.MouseMovement or l.UserInputType == Enum.UserInputType.Touch) then
-        k(l)
+frame.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        updateInput(input)
     end
 end)
 
-local n = false
-f.MouseButton1Click:Connect(function()
-    n = not n
-    c.Size = n and UDim2.new(0, 200, 0, 30) or UDim2.new(0, 200, 0, 150)
-    for _, o in ipairs(c:GetChildren()) do
-        if o.Name ~= "Title" then
-            if o:IsA("Frame") then
-                for _, p in ipairs(o:GetChildren()) do
-                    if p:IsA("TextLabel") or p.Name == "Checkbox" then
-                        p.Visible = not n
+-- Minimize functionality
+local isMinimized = false
+minimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    frame.Size = isMinimized and UDim2.new(0, 200, 0, 30) or UDim2.new(0, 200, 0, 150)
+    for _, child in ipairs(frame:GetChildren()) do
+        if child.Name ~= "Title" then
+            if child:IsA("Frame") then
+                -- Hide both text labels and checkboxes
+                for _, subChild in ipairs(child:GetChildren()) do
+                    if subChild:IsA("TextLabel") or subChild.Name == "Checkbox" then
+                        subChild.Visible = not isMinimized
                     end
                 end
             end
@@ -98,53 +116,57 @@ f.MouseButton1Click:Connect(function()
     end
 end)
 
-local function q(r, s, t)
-    local u = Instance.new("Frame")
-    u.Name = r
-    u.Size = UDim2.new(1, -20, 0, 30)
-    u.Position = t
-    u.BackgroundTransparency = 1
-    u.Parent = c
+-- Function to create a button with a checkbox
+local function createButton(name, text, position)
+    local buttonFrame = Instance.new("Frame")
+    buttonFrame.Name = name
+    buttonFrame.Size = UDim2.new(1, -20, 0, 30)
+    buttonFrame.Position = position
+    buttonFrame.BackgroundTransparency = 1
+    buttonFrame.Parent = frame
 
-    local v = Instance.new("TextLabel")
-    v.Size = UDim2.new(0.8, 0, 1, 0)
-    v.BackgroundTransparency = 1
-    v.Text = s
-    v.TextColor3 = Color3.new(1, 1, 1)
-    v.TextScaled = true
-    v.Font = Enum.Font.Gotham
-    v.TextXAlignment = Enum.TextXAlignment.Left
-    v.Parent = u
+    local buttonText = Instance.new("TextLabel")
+    buttonText.Size = UDim2.new(0.8, 0, 1, 0)
+    buttonText.BackgroundTransparency = 1
+    buttonText.Text = text
+    buttonText.TextColor3 = Color3.new(1, 1, 1)
+    buttonText.TextScaled = true
+    buttonText.Font = Enum.Font.Gotham
+    buttonText.TextXAlignment = Enum.TextXAlignment.Left
+    buttonText.Parent = buttonFrame
 
-    local w = Instance.new("TextButton")
-    w.Name = "Checkbox"
-    w.Size = UDim2.new(0, 20, 0, 20)
-    w.Position = UDim2.new(1, -25, 0.5, -10)
-    w.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    w.BorderSizePixel = 2
-    w.AutoButtonColor = false
-    w.Parent = u
+    local checkbox = Instance.new("TextButton")
+    checkbox.Name = "Checkbox"
+    checkbox.Size = UDim2.new(0, 20, 0, 20)
+    checkbox.Position = UDim2.new(1, -25, 0.5, -10)
+    checkbox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    checkbox.BorderSizePixel = 2
+    checkbox.AutoButtonColor = false
+    checkbox.Parent = buttonFrame
 
-    local x = Instance.new("UICorner")
-    x.CornerRadius = UDim.new(0, 4)
-    x.Parent = w
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 4)
+    uiCorner.Parent = checkbox
 
-    local y = Instance.new("TextLabel")
-    y.Name = "CheckSign"
-    y.Size = UDim2.new(1, 0, 1, 0)
-    y.BackgroundTransparency = 1
-    y.Text = "✓"
-    y.TextColor3 = Color3.new(1, 1, 1)
-    y.TextScaled = true
-    y.Font = Enum.Font.GothamBold
-    y.Visible = false
-    y.Parent = w
+    -- "✓" Sign
+    local checkSign = Instance.new("TextLabel")
+    checkSign.Name = "CheckSign"
+    checkSign.Size = UDim2.new(1, 0, 1, 0)
+    checkSign.BackgroundTransparency = 1
+    checkSign.Text = "✓"
+    checkSign.TextColor3 = Color3.new(1, 1, 1)
+    checkSign.TextScaled = true
+    checkSign.Font = Enum.Font.GothamBold
+    checkSign.Visible = false
+    checkSign.Parent = checkbox
 
-    w.MouseButton1Click:Connect(function()
-        y.Visible = not y.Visible
+    -- Checkbox toggle functionality
+    checkbox.MouseButton1Click:Connect(function()
+        checkSign.Visible = not checkSign.Visible
     end)
 end
 
-q("StartTradeScam", "Start Trade Scam", UDim2.new(0, 10, 0, 40))
-q("FreezeTrade", "Freeze Trade", UDim2.new(0, 10, 0, 75))
-q("AutoReadyTrade", "Auto Ready Trade", UDim2.new(0, 10, 0, 110))
+-- Create buttons with checkboxes
+createButton("StartTradeScam", "Start Trade Scam", UDim2.new(0, 10, 0, 40))
+createButton("FreezeTrade", "Freeze Trade", UDim2.new(0, 10, 0, 75))
+createButton("AutoReadyTrade", "Auto Ready Trade", UDim2.new(0, 10, 0, 110))
