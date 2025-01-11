@@ -1,15 +1,12 @@
--- Ensure the game ID is 2753915549 (Blox Fruits)
-if game.PlaceId ~= 2753915549 then
-    -- Display an error message if the script is not executed in Blox Fruits
-    local errorMessage = Instance.new("Message")
-    errorMessage.Text = "The script is not supported the game. Only Blox Fruits is supported of the script (Game ID: 2753915549)."
-    errorMessage.Parent = game.Workspace
-    
-    -- Optional: Remove the error message after some time
-    wait(5)
-    errorMessage:Destroy()
+-- Blox Fruits Game Place ID (currently as of the latest update)
+local bloxFruitsPlaceId = 2753915549  -- Place ID for Blox Fruits
+local bloxFruitsGameId = 723942275 -- Game ID for Blox Fruits
 
-    return  -- Exit the script if it's not the correct game
+-- Check if the game is Blox Fruits using both PlaceId and GameId
+if game.PlaceId ~= bloxFruitsPlaceId or game.GameId ~= bloxFruitsGameId then
+    -- Disconnect the player with a warning message
+    game.Players.LocalPlayer:Kick("Game not supported. Only Blox Fruits is supported.")
+    return  -- Exit the script if the game is not Blox Fruits
 end
 
 -- Create the main GUI
