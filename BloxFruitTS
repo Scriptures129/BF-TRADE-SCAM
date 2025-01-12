@@ -1,14 +1,33 @@
--- Client-side script to handle GUI interactions and sending events
+-- Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local updateFruitsEvent = ReplicatedStorage:WaitForChild("UpdateFruitsEvent")
-local freezeEvent = ReplicatedStorage:WaitForChild("FreezeEvent")
-local readyTradeEvent = ReplicatedStorage:WaitForChild("ReadyTradeEvent")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Initialize the GUI and create buttons
+-- Verify and create events if necessary
+local function getOrCreateRemoteEvent(eventName)
+    local event = ReplicatedStorage:FindFirstChild(eventName)
+    if not event then
+        event = Instance.new("RemoteEvent")
+        event.Name = eventName
+        event.Parent = ReplicatedStorage
+        print(eventName .. " created in ReplicatedStorage")
+    else
+        print(eventName .. " found in ReplicatedStorage")
+    end
+    return event
+end
+
+-- Get or create the required events
+local updateFruitsEvent = getOrCreateRemoteEvent("UpdateFruitsEvent")
+local freezeEvent = getOrCreateRemoteEvent("FreezeEvent")
+local readyTradeEvent = getOrCreateRemoteEvent("ReadyTradeEvent")
+
+-- Initialize the GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "BFTradeScamGUI"
-gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Main Frame
 local frame = Instance.new("Frame")
 frame.Name = "MainFrame"
 frame.Size = UDim2.new(0, 200, 0, 150)
@@ -18,15 +37,54 @@ frame.BorderSizePixel = 0
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Parent = gui
 
--- Add rounded corners to the frame
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0, 8)
 uiCorner.Parent = frame
 
--- Title bar
+-- Drag functionality
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        dragInput = input
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        updateDrag(input)
+    end
+end)
+
+-- Title Bar
 local title = Instance.new("TextLabel")
 title.Name = "Title"
-title.Size = UDim2.new(1, -1, 0, 25)
+title.Size = UDim2.new(1, 0, 0, 25)
 title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 title.Text = "BF Trade Scam"
 title.TextColor3 = Color3.new(1, 1, 1)
@@ -35,7 +93,7 @@ title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = frame
 
--- Minimize button
+-- Minimize Button
 local minimizeButton = Instance.new("TextButton")
 minimizeButton.Name = "MinimizeButton"
 minimizeButton.Size = UDim2.new(0, 15, 0, 15)
@@ -48,14 +106,30 @@ minimizeButton.TextScaled = true
 minimizeButton.Font = Enum.Font.GothamBold
 minimizeButton.Parent = title
 
--- Create buttons with checkboxes
-local function createButton(name, text, position, checkboxCallback)
+-- Content Holder
+local content = Instance.new("Frame")
+content.Name = "Content"
+content.Size = UDim2.new(1, 0, 1, -25)
+content.Position = UDim2.new(0, 0, 0, 25)
+content.BackgroundTransparency = 1
+content.Parent = frame
+
+-- Minimize Logic
+local isMinimized = false
+minimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    content.Visible = not isMinimized
+    frame.Size = isMinimized and UDim2.new(0, 200, 0, 25) or UDim2.new(0, 200, 0, 150)
+end)
+
+-- Create Buttons with Checkboxes
+local function createButton(name, text, position, callback)
     local buttonFrame = Instance.new("Frame")
     buttonFrame.Name = name
     buttonFrame.Size = UDim2.new(1, -20, 0, 30)
     buttonFrame.Position = position
     buttonFrame.BackgroundTransparency = 1
-    buttonFrame.Parent = frame
+    buttonFrame.Parent = content
 
     local buttonText = Instance.new("TextLabel")
     buttonText.Size = UDim2.new(0.8, 0, 1, 0)
@@ -93,37 +167,50 @@ local function createButton(name, text, position, checkboxCallback)
 
     checkbox.MouseButton1Click:Connect(function()
         checkSign.Visible = not checkSign.Visible
-        checkboxCallback(checkSign.Visible)
+        callback(checkSign.Visible)
     end)
 end
 
--- Function to handle "Auto Ready Trade" checkbox
-createButton("AutoReadyTrade", "Auto Ready Trade", UDim2.new(0, 10, 0, 120), function(isChecked)
+-- Function to get the other player in the trade
+local function getOtherPlayerInTrade()
+    -- Logic to determine the other player in the trade
+    -- Replace this with your actual implementation based on your game's trade system
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            return player
+        end
+    end
+end
+
+-- Add buttons to the content frame
+createButton("ReplaceFruits", "Start Trade Scam", UDim2.new(0, 10, 0, 10), function(isChecked)
     if isChecked then
-        local targetPlayer = game.Players.LocalPlayer -- Replace with target player logic if needed
-        if targetPlayer then
-            print("Auto Ready Trade triggered for", targetPlayer.Name)
-            readyTradeEvent:FireServer(targetPlayer)  -- Send event to server to auto-click ready
+        print("Replace Fruits triggered")
+        updateFruitsEvent:FireServer(LocalPlayer, "TrashFruitID")
+    end
+end)
+
+createButton("FreezeTrade", "Start Freeze Trade", UDim2.new(0, 10, 0, 50), function(isChecked)
+    print("Freeze Trade triggered:", isChecked)
+    local otherPlayer = getOtherPlayerInTrade()
+    if otherPlayer then
+        freezeEvent:FireServer(otherPlayer, isChecked)
+    end
+end)
+
+createButton("AutoReadyTrade", "Auto Ready Trade", UDim2.new(0, 10, 0, 90), function(isChecked)
+    if isChecked then
+        print("Auto Ready Trade triggered")
+        local otherPlayer = getOtherPlayerInTrade()
+        if otherPlayer then
+            -- Automatically click the "Ready" button for the other player
+            local otherReadyButton = otherPlayer:WaitForChild("TradeGUI"):WaitForChild("ReadyButton")
+            otherReadyButton.MouseButton1Click:Fire()
+
+            -- Freeze the other player's POV (freeze event for the other player)
+            freezeEvent:FireServer(otherPlayer, true)
         end
     end
 end)
 
--- Function to handle "Start Freeze Trade" checkbox
-createButton("FreezeTrade", "Start Freeze Trade", UDim2.new(0, 10, 0, 80), function(isChecked)
-    local targetPlayer = game.Players.LocalPlayer -- Replace with target player logic if needed
-    if targetPlayer then
-        print("Freeze Trade triggered for", targetPlayer.Name)
-        freezeEvent:FireServer(targetPlayer, isChecked)  -- Freeze or unfreeze the UI for the other player
-    end
-end)
-
--- Function to handle replacing fruits
-createButton("ReplaceFruits", "Start Trade Scam", UDim2.new(0, 10, 0, 40), function(isChecked)
-    if isChecked then
-        local targetPlayer = game.Players.LocalPlayer -- Replace with target player logic if needed
-        if targetPlayer then
-            print("Replace Fruits triggered for", targetPlayer.Name)
-            updateFruitsEvent:FireServer(targetPlayer, "TrashFruitID")  -- Replace fruits with trash fruit
-        end
-    end
-end)
+print("BFTradeScam GUI with minimize functionality successfully loaded.")
